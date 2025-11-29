@@ -105,7 +105,7 @@ body {
   gap: 12px;
   align-items: center;
   padding: 14px 18px;
-  background: linear-gradient(180deg, rgba(26, 115, 232, 0.06), transparent);
+  background: linear-gradient(180deg, rgba(26,115,232,0.06), transparent);
 }
 
 .week-toggle {
@@ -146,7 +146,7 @@ body {
 /* WEEK BODY */
 .week-body {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 12px;
   padding: 16px;
   border-top: 1px solid var(--border-light);
@@ -157,7 +157,7 @@ body {
   border: 1px solid var(--border-light);
   padding: 12px;
   border-radius: 10px;
-  min-height: 130px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   transition: 0.15s ease;
@@ -172,27 +172,47 @@ body {
   font-size: 13px;
   color: var(--accent-2);
   margin-bottom: 8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.day-time {
+  font-size:12px;
+  color:var(--muted);
+  font-weight:600;
 }
 
 /* TASKS */
 .task {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
   margin-bottom: 8px;
   font-size: 13px;
 }
 
 .task input[type="checkbox"] {
-  transform: scale(1.1);
-  margin-top: 3px;
+  transform: scale(1.05);
+  margin-top: 6px;
   cursor: pointer;
   accent-color: var(--accent);
 }
 
+.task .task-content { flex:1; }
 .task .task-title {
-  font-weight: 600;
+  font-weight: 700;
   color: #202124;
+  margin-bottom:4px;
+  font-size:13px;
+}
+
+.task-details {
+  margin:0 0 6px 18px;
+  padding:0;
+  list-style: disc;
+  color:var(--muted);
+  font-size:12px;
 }
 
 .task.continued {
@@ -214,25 +234,19 @@ body {
 }
 
 /* RESPONSIVE */
-@media (max-width: 980px) {
-  .week-body {
-    grid-template-columns: repeat(3, 1fr);
-  }
+@media (max-width: 1200px) {
+  .week-body { grid-template-columns: repeat(4, 1fr); }
 }
-
-@media (max-width: 600px) {
-  .week-body {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+@media (max-width: 800px) {
+  .week-body { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .week-body { grid-template-columns: 1fr; }
+  .day-header { font-size:12px; }
 }
 
 /* CHECKED ITEMS */
-input[type="checkbox"]:checked + .task-title {
+input[type="checkbox"]:checked + .task-content .task-title {
   text-decoration: line-through;
   color: var(--muted);
 }

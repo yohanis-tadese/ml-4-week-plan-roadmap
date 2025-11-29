@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ML & AI 16-Week Roadmap Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>ML & AI — 16-Week Roadmap (Mon–Sat, 3 hrs/day)</h1>
+    <div class="controls">
+      <button id="clear-progress">Clear progress</button>
+      <span class="note">Progress stored locally (localStorage)</span>
+    </div>
+  </header>
+
+  <main id="app">
+    <p class="intro">Each week expands (▼). Tasks can span multiple days — a single checkbox will cover the whole multi-day task. Click to check. Monday → Saturday.</p>
+
+    <section id="weeks"></section>
+  </main>
+
+  <template id="week-template">
+    <div class="week">
+      <div class="week-head">
+        <button class="week-toggle">▼</button>
+        <h2 class="week-title"></h2>
+        <div class="week-meta"><span class="week-progress">0%</span></div>
+      </div>
+      <div class="week-body hidden"></div>
+    </div>
+  </template>
+
+<script>
+/* roadmap data (Option 1 detail). Each week contains tasks assigned to startDay (0..5 for Mon..Sat) and span days (1..3).
+   A task object: { id: "w1-t1", title: "Task title", startDay: 0, span: 1 } */
+const roadmap = [
+  /* Week 1: Python for Data */
+  {
+    title: "Week 1 — Python for Data (NumPy / Pandas / Matplotlib)",
+    tasks: [
+      {id:"w1-t1", title:"Install Python, pip packages (numpy, pandas, matplotlib, jupyter)", startDay:0, span:1},
+      {id:"w1-t2", title:"NumPy arrays, creation, indexing, slicing", startDay:1, span:1},
+      {id:"w1-t3", title:"NumPy broadcasting & common operations", startDay:2, span:1},
+      {id:"w1-t4", title:"Pandas Series & DataFrame basics", startDay:3, span:1},
+      {id:"w1-t5", title:"Data cleaning: missing values, types, conversions", startDay:4, span:1},
+      {id:"w1-t6", title:"Matplotlib: basic plots and figures", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 2: Core ML Concepts */
+  {
+    title: "Week 2 — Core ML Concepts (datasets, features, evaluation)",
+    tasks: [
+      {id:"w2-t1", title:"What is ML: supervised/unsupervised/reinforcement (overview)", startDay:0, span:1},
+      {id:"w2-t2", title:"Dataset anatomy: features, labels, schema", startDay:1, span:1},
+      {id:"w2-t3", title:"Train/validation/test split; cross-validation intro", startDay:2, span:1},
+      {id:"w2-t4", title:"Feature scaling: normalization and standardization", startDay:3, span:1},
+      {id:"w2-t5", title:"Overfitting vs underfitting; bias-variance", startDay:4, span:1},
+      {id:"w2-t6", title:"Evaluation metrics: accuracy, precision, recall, RMSE", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 3: Classical ML Algorithms */
+  {
+    title: "Week 3 — Classical ML Algorithms (the essentials)",
+    tasks: [
+      {id:"w3-t1", title:"Linear Regression theory and sklearn example", startDay:0, span:1},
+      {id:"w3-t2", title:"Logistic Regression for classification", startDay:1, span:1},
+      {id:"w3-t3", title:"Decision Trees: concept and overfitting", startDay:2, span:1},
+      {id:"w3-t4", title:"Random Forests: ensembles & feature importance", startDay:3, span:1},
+      {id:"w3-t5", title:"KNN: distance metrics and use-cases", startDay:4, span:1},
+      {id:"w3-t6", title:"SVM basics and kernel intuition", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 4: ML Practice & Projects */
+  {
+    title: "Week 4 — ML Practice (small projects)",
+    tasks: [
+      {id:"w4-t1", title:"Titanic project: data exploration (Part 1)", startDay:0, span:2}, // spans Mon-Tue
+      {id:"w4-t2", title:"Titanic project: modeling & evaluation (Part 2)", startDay:2, span:2}, // Wed-Thu
+      {id:"w4-t3", title:"House price prediction: features & baseline model", startDay:4, span:1},
+      {id:"w4-t4", title:"Project review and write README", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 5: ML Math Essentials */
+  {
+    title: "Week 5 — ML Math Essentials (linear algebra, probability, calculus)",
+    tasks: [
+      {id:"w5-t1", title:"Vectors & matrices: notation and shapes", startDay:0, span:1},
+      {id:"w5-t2", title:"Matrix ops: dot, transpose, inverse (intuition)", startDay:1, span:1},
+      {id:"w5-t3", title:"Probability basics: events, distributions, expectation", startDay:2, span:1},
+      {id:"w5-t4", title:"Variance, covariance and correlation", startDay:3, span:1},
+      {id:"w5-t5", title:"Derivatives and gradients: why they matter", startDay:4, span:1},
+      {id:"w5-t6", title:"Loss functions and optimization overview", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 6: Intro to Deep Learning */
+  {
+    title: "Week 6 — Intro to Deep Learning",
+    tasks: [
+      {id:"w6-t1", title:"Neural network basics: neurons, layers, activations", startDay:0, span:1},
+      {id:"w6-t2", title:"Activation functions: ReLU, Sigmoid, Tanh", startDay:1, span:1},
+      {id:"w6-t3", title:"Loss functions in DL: MSE, Cross-Entropy", startDay:2, span:1},
+      {id:"w6-t4", title:"Backpropagation concept (visual intuition)", startDay:3, span:1},
+      {id:"w6-t5", title:"Optimizers: SGD, Adam, learning rate basics", startDay:4, span:1},
+      {id:"w6-t6", title:"Build a small NN with PyTorch (hello world)", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 7: PyTorch Fundamentals */
+  {
+    title: "Week 7 — PyTorch Fundamentals",
+    tasks: [
+      {id:"w7-t1", title:"Tensors and operations in PyTorch", startDay:0, span:1},
+      {id:"w7-t2", title:"Dataset & DataLoader pattern", startDay:1, span:1},
+      {id:"w7-t3", title:"Define model class and layers", startDay:2, span:1},
+      {id:"w7-t4", title:"Training loop: forward, loss, backward, step", startDay:3, span:1},
+      {id:"w7-t5", title:"Saving/loading models and checkpoints", startDay:4, span:1},
+      {id:"w7-t6", title:"Train MNIST classifier end-to-end", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 8: NLP Basics */
+  {
+    title: "Week 8 — NLP Basics (tokenization, embeddings)",
+    tasks: [
+      {id:"w8-t1", title:"Text cleaning & preprocessing", startDay:0, span:1},
+      {id:"w8-t2", title:"Tokenization methods: word / subword / BPE", startDay:1, span:1},
+      {id:"w8-t3", title:"Word embeddings intuition (word2vec, GloVe)", startDay:2, span:1},
+      {id:"w8-t4", title:"TF-IDF & simple vectorization", startDay:3, span:1},
+      {id:"w8-t5", title:"Basic sentiment classifier with sklearn", startDay:4, span:1},
+      {id:"w8-t6", title:"Project: sentiment pipeline and evaluation", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 9: Transformers Intro */
+  {
+    title: "Week 9 — Transformers (attention & architecture)",
+    tasks: [
+      {id:"w9-t1", title:"Attention mechanism intuition", startDay:0, span:1},
+      {id:"w9-t2", title:"Self-attention deep dive with toy example", startDay:1, span:1},
+      {id:"w9-t3", title:"Transformer encoder/decoder roles", startDay:2, span:1},
+      {id:"w9-t4", title:"Positional encoding and multi-head attention", startDay:3, span:1},
+      {id:"w9-t5", title:"HuggingFace Transformers quickstart", startDay:4, span:1},
+      {id:"w9-t6", title:"Run a BERT classifier using transformers pipeline", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 10: LLM Usage & Tools */
+  {
+    title: "Week 10 — LLM Usage & Tools (embeddings, vector DBs, RAG)",
+    tasks: [
+      {id:"w10-t1", title:"Embeddings: concept and use-cases", startDay:0, span:1},
+      {id:"w10-t2", title:"Vector DB basics: FAISS / Milvus / Pinecone overview", startDay:1, span:1},
+      {id:"w10-t3", title:"Prompt engineering fundamentals", startDay:2, span:1},
+      {id:"w10-t4", title:"RAG (Retrieve & Generate) architecture", startDay:3, span:1},
+      {id:"w10-t5", title:"LangChain basics and chains concept", startDay:4, span:1},
+      {id:"w10-t6", title:"Build mini RAG: embeddings + retrieval + LLM", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 11: Fine-Tuning Basics */
+  {
+    title: "Week 11 — Fine-tuning LLMs (PEFT / LoRA)",
+    tasks: [
+      {id:"w11-t1", title:"Dataset preparation for fine-tuning", startDay:0, span:1},
+      {id:"w11-t2", title:"Tokenization care & special tokens", startDay:1, span:1},
+      {id:"w11-t3", title:"Introduction to PEFT/LoRA concepts", startDay:2, span:1},
+      {id:"w11-t4", title:"Fine-tune small model locally (practice)", startDay:3, span:2}, // Thu-Fri
+      {id:"w11-t5", title:"Evaluate and compare fine-tuned model", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 12: Quantization & Optimization */
+  {
+    title: "Week 12 — Optimization (quantization, speedups)",
+    tasks: [
+      {id:"w12-t1", title:"Model quantization basics (int8, fp16)", startDay:0, span:1},
+      {id:"w12-t2", title:"Inference speed: batching, caching, async", startDay:1, span:1},
+      {id:"w12-t3", title:"Memory optimizations and offloading", startDay:2, span:1},
+      {id:"w12-t4", title:"Using GPU efficiently (memory & nvlink basics)", startDay:3, span:1},
+      {id:"w12-t5", title:"DeepSpeed/Accelerate overview", startDay:4, span:1},
+      {id:"w12-t6", title:"Apply a quantized model for inference test", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 13: RAG Advanced & Retrieval */
+  {
+    title: "Week 13 — RAG Advanced (indexing, chunking, retrieval strategies)",
+    tasks: [
+      {id:"w13-t1", title:"Document chunking strategies and metadata", startDay:0, span:1},
+      {id:"w13-t2", title:"Vector index tuning and distance metrics", startDay:1, span:1},
+      {id:"w13-t3", title:"Hybrid retrieval (sparse + dense)", startDay:2, span:1},
+      {id:"w13-t4", title:"Context window management and prompt templates", startDay:3, span:1},
+      {id:"w13-t5", title:"Implementing refreshable index (pipeline)", startDay:4, span:1},
+      {id:"w13-t6", title:"RAG testing & failure cases", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 14: Advanced Fine-Tuning */
+  {
+    title: "Week 14 — Advanced Fine-Tuning & Evaluation",
+    tasks: [
+      {id:"w14-t1", title:"Advanced LoRA & delta methods", startDay:0, span:1},
+      {id:"w14-t2", title:"QLoRA and large-adapter strategies", startDay:1, span:1},
+      {id:"w14-t3", title:"Evaluation metrics for LLMs (BLEU, ROUGE, human eval)", startDay:2, span:1},
+      {id:"w14-t4", title:"Bias, safety, and alignment checks", startDay:3, span:1},
+      {id:"w14-t5", title:"Iterative fine-tuning workflow", startDay:4, span:1},
+      {id:"w14-t6", title:"Automate fine-tuning with scripts & checkpoints", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 15: Deployment & ML Ops */
+  {
+    title: "Week 15 — Deployment & ML Ops",
+    tasks: [
+      {id:"w15-t1", title:"FastAPI model serving pattern", startDay:0, span:1},
+      {id:"w15-t2", title:"Dockerize model service & multi-stage builds", startDay:1, span:1},
+      {id:"w15-t3", title:"CI/CD basics for model updates", startDay:2, span:1},
+      {id:"w15-t4", title:"Monitoring: logs, metrics, alerts (Prometheus/Grafana)", startDay:3, span:1},
+      {id:"w15-t5", title:"Scaling: autoscaling, sharding, batching", startDay:4, span:1},
+      {id:"w15-t6", title:"Security & rate-limiting for model APIs", startDay:5, span:1}
+    ]
+  },
+
+  /* Week 16: Final Project */
+  {
+    title: "Week 16 — Final Project (end-to-end AI assistant)",
+    tasks: [
+      {id:"w16-t1", title:"Project planning: scope, data, tech stack", startDay:0, span:1},
+      {id:"w16-t2", title:"Build retrieval layer & vector index", startDay:1, span:2}, // Tue-Wed
+      {id:"w16-t3", title:"Integrate LLM (OpenAI or HF endpoint)", startDay:3, span:1},
+      {id:"w16-t4", title:"Add tooling: actions/agents, conversation memory", startDay:4, span:1},
+      {id:"w16-t5", title:"Deploy project & write docs", startDay:5, span:1}
+    ]
+  }
+];
+
+/* Utilities */
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat"];
+const weeksContainer = document.getElementById("weeks");
+const weekTpl = document.getElementById("week-template");
+
+/* Render roadmap */
+roadmap.forEach((weekData, wIdx) => {
+  const weekNode = weekTpl.content.cloneNode(true);
+  const weekEl = weekNode.querySelector(".week");
+  const head = weekEl.querySelector(".week-head");
+  const toggleBtn = head.querySelector(".week-toggle");
+  const titleEl = weekEl.querySelector(".week-title");
+  const body = weekEl.querySelector(".week-body");
+  const progressEl = head.querySelector(".week-progress");
+
+  titleEl.textContent = `${weekData.title}`;
+  body.innerHTML = "";
+
+  // Build day grid
+  for (let d=0; d<6; d++) {
+    const dayCol = document.createElement("div");
+    dayCol.className = "day-col";
+    const dayHeader = document.createElement("div");
+    dayHeader.className = "day-header";
+    dayHeader.textContent = `${DAYS[d]}`;
+    dayCol.appendChild(dayHeader);
+
+    // find tasks that start on this day
+    const startTasks = weekData.tasks.filter(t => t.startDay === d);
+    // tasks that continue into this day (not starting here) - for display
+    const contTasks = weekData.tasks.filter(t => t.startDay < d && (t.startDay + t.span - 1) >= d);
+
+    // render starting tasks with checkboxes
+    startTasks.forEach(task => {
+      const taskEl = document.createElement("label");
+      taskEl.className = "task";
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.id = `${task.id}`;
+      chk.dataset.week = wIdx;
+      chk.dataset.title = task.title;
+      chk.dataset.span = task.span;
+      chk.dataset.start = task.startDay;
+      // load saved state
+      chk.checked = localStorage.getItem(chk.id) === "true";
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "task-title";
+      titleSpan.textContent = task.title + (task.span>1 ? ` (span ${task.span}d)` : "");
+
+      taskEl.appendChild(chk);
+      taskEl.appendChild(titleSpan);
+      dayCol.appendChild(taskEl);
+    });
+
+    // render continued tasks as badges
+    contTasks.forEach(task => {
+      const cont = document.createElement("div");
+      cont.className = "task continued";
+      cont.textContent = `Continues: ${task.title}`;
+      dayCol.appendChild(cont);
+    });
+
+    // if no tasks on that day, show placeholder short task (3-hr filler learning / review)
+    if (startTasks.length === 0 && contTasks.length === 0) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "task placeholder";
+      placeholder.textContent = "Practice / Review (3 hrs)";
+      dayCol.appendChild(placeholder);
+    }
+
+    body.appendChild(dayCol);
+  }
+
+  // attach toggle
+  toggleBtn.addEventListener("click", () => {
+    body.classList.toggle("hidden");
+    toggleBtn.textContent = body.classList.contains("hidden") ? "▼" : "▲";
+  });
+
+  // compute progress function
+  const computeProgress = () => {
+    const total = weekData.tasks.length;
+    if (total === 0) return 0;
+    let done = 0;
+    weekData.tasks.forEach(t => {
+      if (localStorage.getItem(t.id) === "true") done++;
+    });
+    const percent = Math.round((done/total)*100);
+    progressEl.textContent = `${percent}%`;
+    // visually color progress
+    progressEl.style.setProperty("--p", percent + "%");
+  };
+
+  // listen to checkboxes inside this week
+  weekEl.addEventListener("change", (e) => {
+    if (e.target && e.target.matches("input[type='checkbox']")) {
+      const cb = e.target;
+      // save state
+      localStorage.setItem(cb.id, cb.checked ? "true" : "false");
+      computeProgress();
+    }
+  });
+
+  // initial progress
+  computeProgress();
+
+  weeksContainer.appendChild(weekEl);
+});
+
+/* Clear progress button */
+document.getElementById("clear-progress").addEventListener("click", () => {
+  if (!confirm("Clear all saved progress? This will reset checked tasks.")) return;
+  roadmap.forEach(week => {
+    week.tasks.forEach(t => localStorage.removeItem(t.id));
+  });
+  // refresh checkboxes
+  document.querySelectorAll("input[type='checkbox']").forEach(cb => cb.checked = false);
+  // update progress displays
+  document.querySelectorAll(".week-progress").forEach(el => el.textContent = "0%");
+});
+
+/* Persist checkbox state for new checkboxes (in case some were loaded after render) */
+document.querySelectorAll("input[type='checkbox']").forEach(cb => {
+  cb.addEventListener("change", () => {
+    localStorage.setItem(cb.id, cb.checked ? "true" : "false");
+  });
+});
+</script>
+</body>
+</html>
